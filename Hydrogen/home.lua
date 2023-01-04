@@ -23,8 +23,6 @@ local function firsttip ()
   end)
 end
 
-debugmode=true
-
 local ccc=activity.getSharedData("第一次提示")
 if ccc ==nil then
   双按钮对话框("注意","该软件仅供交流学习，严禁用于商业用途，请于下载后的24小时内卸载","登录","知道了",function()
@@ -47,6 +45,7 @@ local qqq=activity.getSharedData("开启想法")
 
 if qqq==nil then
   activity.setSharedData("开启想法","true")
+  qqq=activity.getSharedData("开启想法")
  elseif qqq=="false" then
   adpp=page_home_p.getAdapter()
   adpp.remove(1)
@@ -456,6 +455,7 @@ function closeD(id)--主页底栏项目灰色动画
 end
 
 function homepage1()
+  主页刷新()
   Http.get("https://api.zhihu.com/feed-root/sections/query/v2",access_token_head,function(code,content)
     if code==200 then
       local decoded_content = require "cjson".decode(content)
@@ -476,6 +476,8 @@ function homepage1()
           )
         end
       end
+     elseif code==401 then
+      myhtb.setVisibility(View.GONE)
     end
   end)
   c1=x
@@ -1080,7 +1082,6 @@ function 主页刷新(hometype)
         requrl[-1] = decoded_content.paging.next
        elseif code==401 then
         提示("请登录后访问推荐，http错误码401")
-        状态="未登录"
         --[[      list2.Text="请先登录"
       list9.Text="请先登录"]]
         -- list2.setVisibility(8)
@@ -1089,7 +1090,6 @@ function 主页刷新(hometype)
         -- empty9.setVisibility(0)
        else
         提示("获取数据失败，请检查网络是否正常，http错误码"..code)
-        状态="未登录"
         --[[      list2.text="获取数据失败"
       list9.text="获取数据失败"]]
         -- list2.setVisibility(8)
@@ -1107,6 +1107,23 @@ function 主页刷新(hometype)
     local yxuan_adpqy=LuaAdapter(activity,itemc2)
     list2.adapter=yxuan_adpqy
 
+    list2.setOnScrollListener{
+      onScroll=function(view,a,b,c)
+        if a+b==list2.adapter.getCount() and isadd and list2.adapter.getCount()>0 then
+          isadd=false
+          sr.setRefreshing(true)
+          主页刷新()
+          System.gc()
+          Handler().postDelayed(Runnable({
+            run=function()
+              sr.setRefreshing(false);
+              isadd=true
+            end,
+          }),1000)
+        end
+      end
+    }
+
 
 
 
@@ -1121,11 +1138,8 @@ function 主页刷新(hometype)
     主页推荐刷新(choosebutton)
   end
 end
-主页刷新()
+--主页刷新()
 
-if 状态=="未登录" then
-  sign_out.setVisibility(View.INVISIBLE)
-end
 
 
 sr.setProgressBackgroundColorSchemeColor(转0x(backgroundc));
@@ -1144,22 +1158,7 @@ sr.setOnRefreshListener({
 
 
 isadd=true
-list2.setOnScrollListener{
-  onScroll=function(view,a,b,c)
-    if a+b==list2.adapter.getCount() and isadd and list2.adapter.getCount()>0 then
-      isadd=false
-      sr.setRefreshing(true)
-      主页刷新()
-      System.gc()
-      Handler().postDelayed(Runnable({
-        run=function()
-          sr.setRefreshing(false);
-          isadd=true
-        end,
-      }),1000)
-    end
-  end
-}
+
 --热榜布局
 itemc=
 {
@@ -1460,6 +1459,9 @@ function getuserinfo()
       侧滑头.onClick=function()
         activity.newActivity("people",{uid})
       end
+      sign_out.setVisibility(View.VISIBLE)
+     elseif code==401 then
+      状态="未登录"
     end
   end)
 

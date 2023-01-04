@@ -1,7 +1,11 @@
 require "import"
 import "mods.imports"
 
-versionCode=16.06
+<<<<<<< HEAD
+versionCode=16.062
+=======
+versionCode=16.061
+>>>>>>> refs/heads/master
 导航栏高度=activity.getResources().getDimensionPixelSize(luajava.bindClass("com.android.internal.R$dimen")().navigation_bar_height)
 状态栏高度=activity.getResources().getDimensionPixelSize(luajava.bindClass("com.android.internal.R$dimen")().status_bar_height)
 型号 = Build.MODEL
@@ -1269,6 +1273,10 @@ function 检查链接(url,b)
     if b then return true end
     local videoid=url:match("/zvideo/(.-)?") or url:match("/zvideo/(.+)")
     activity.newActivity("column",{videoid,"视频"})
+   elseif url:find("https://ssl.ptlogin2.qq.com/jump") then
+    if b then return false end
+    activity.finish()
+    activity.newActivity("login",{url})
    else
     if b then return false end
     activity.newActivity("huida",{url})
@@ -2664,3 +2672,7 @@ Http.get(get_api,function(code,content)
     okstart=content:match("start%=(.+),start")
   end
 end)
+import "com.baidu.mobstat.StatService"
+StatService
+.setAppKey("c5aac7351d")
+.start(this)
